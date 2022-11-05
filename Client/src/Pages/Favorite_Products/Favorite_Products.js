@@ -2,9 +2,26 @@ import { Grid } from "@mui/material";
 import { Typography, Container, Pagination } from "@mui/material";
 // box in matrial ui
 import { Box } from "@mui/system";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import Favorite_Product from "./Favorite_Product";
+import { useSelector } from "react-redux";
 
 function Favorite_Products() {
+  const { userID, role } = useSelector((state) => state.loging);
+  const [favorite, setfavorite] = useState([]);
+  const [isLoaded, setLoded] = useState(false);
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/User/favorite/" + userID)
+      .then((res) => {
+        setfavorite(res.data.productList);
+        setLoded(true);
+      })
+      .catch((er) => {
+        setLoded(true);
+      });
+  }, []);
   return (
     <>
       <Box>
@@ -32,7 +49,7 @@ function Favorite_Products() {
             </Typography>
           </Box>
           <Grid
-           mt={2}
+            mt={2}
             mb={7}
             container
             spacing={2}
@@ -43,9 +60,24 @@ function Favorite_Products() {
               alignItems: "center",
             }}
           >
-            {[1, 2, 3, 4].map((row, index) => {
-              return <Favorite_Product key={index} />;
+            {favorite.map((row, index) => {
+              return <Favorite_Product index={index} data={row} />;
             })}
+            {isLoaded && favorite.length <= 0 && (
+              <Box sx={{ flex: 1, justifyContent: "center" }}>
+                <Typography sx={{ textAlign: "center", color: "#555" }}>
+                  No favorites found
+                </Typography>
+              </Box>
+            )}
+            {!isLoaded && (
+              <Box sx={{ flex: 1, justifyContent: "center" }}>
+                <Typography sx={{ textAlign: "center", color: "#555" }}>
+                  Loading ..
+                </Typography>
+              </Box>
+            )}
+            {/* {dataempty && <Typography>no Favorite found </Typography>} */}
           </Grid>
         </Container>
       </Box>
@@ -54,12 +86,7 @@ function Favorite_Products() {
         my={3}
         sx={{ display: "flex", flexDirection: "row", justifyContent: "center" }}
       >
-        <Pagination
-          shape="rounded"
-          count={5}
-          color="primary"
-          // onChange={handleChange}
-        />
+        <Pagination shape="rounded" count={1} color="primary" />
       </Box>
     </>
   );

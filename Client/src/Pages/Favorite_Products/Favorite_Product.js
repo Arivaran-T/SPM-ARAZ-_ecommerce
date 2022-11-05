@@ -7,22 +7,73 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import StarIcon from "@mui/icons-material/Star";
 import AddShoppingCartOutlinedIcon from "@mui/icons-material/AddShoppingCartOutlined";
+import calReview from "../../Helper/calReview";
+import calNewPrice from "../../Helper/calNewPrice";
 // axios
 import axios from "axios";
+import { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 function Favorite_Product(props) {
-  const review = 4;
+  console.log(props.data.id);
+  const { userID, role } = useSelector((state) => state.loging);
+
+  //url
+  const baseURL = "http://localhost:5000/";
+
+  const Favorite = props.data;
+
+  const [star, setStar] = useState(0);
+  const [count, setCount] = useState(1);
+  useEffect(() => {
+    setStar(calReview(Favorite?.reviews));
+  }, []);
   // addshoppingcart fun
-  const AddShoppingCart = () => {};
+  // const AddShoppingCart = () => {};
   // delete fun
   const OnDelete = () => {
     axios
-      .delete(`http://localhost:5000/api/${props.data._id}`)
-      .then((res) => {})
+      .delete(
+        `http://localhost:5000/User/favorite?userId=${userID}&indexNo=${props.index}`
+      )
+      .then((res) => {
+        setTimeout(() => {
+          toast("succesfully remove from Whishlist", { type: "info" });
+        }, 100);
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+
+        setTimeout(() => {}, 1000);
+      })
       .catch((er) => {});
+  };
+  //add to cart
+  const addToCart = () => {
+    const data = {
+      productId: props.data.id,
+      count: count,
+      userId: userID,
+    };
+
+    console.log(data);
+
+    axios
+      .post(
+        `http://localhost:5000/User/cart?productId=${props.data.id}&count=${count}&userId=${userID}`
+      )
+      .then((res) => {
+        console.log(res.data);
+        toast("Added to cart", { type: "info" });
+      })
+      .catch((er) => {
+        toast("Unable to add to cart", { type: "error" });
+      });
   };
   return (
     <>
+      <ToastContainer />
       <Grid item sx={{ width: { md: 850, xs: 440, sm: 700 } }}>
         <Box
           component={Paper}
@@ -31,39 +82,49 @@ function Favorite_Product(props) {
             borderRadius: 2,
             bgcolor: "#fff",
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
             "&:hover": { transform: "scale(1.01)" },
             transitionDuration: ".2s",
             transitionProperty: "all",
           }}
         >
-          <Grid item>
-            <Box>
-              <CardMedia
-                component="img"
-                sx={{
-                  width: 200,
-                  height: { md: 200, sm: 240, xs: 265 },
-                  overflow: "scroll",
-                  borderRadius: "5px 5px 2px 2px ",
-                }}
-                image={
-                  "https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg?cs=srgb&dl=pexels-designecologist-1779487.jpg&fm=jpg"
-                }
-              />
-            </Box>
-          </Grid>
+          <Box>
+            <CardMedia
+              component="img"
+              sx={{
+                width: { md: 200, sm: 240, xs: 425 },
+                height: { md: 200, sm: 240, xs: 265 },
+
+                borderRadius: "5px 5px 2px 2px ",
+              }}
+              image={`${baseURL}products/images/${Favorite?.images[0]}`}
+            />
+          </Box>
+
           {/* title */}
           <Box p={2}>
             <Typography
               sx={{
                 fontFamily: "Open sans",
-                fontWeight: "800",
+                fontWeight: "900",
                 fontSize: 14,
                 color: "#2B4865",
                 letterSpacing: -0.5,
               }}
             >
-              Computer with 2TB hard disk and 256 SSD, 11th generation..
+              {Favorite.title}
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: "Open sans",
+                fontWeight: "500",
+                fontSize: 14,
+                color: "#2B4865",
+                letterSpacing: -0.5,
+              }}
+            >
+              {Favorite?.description.substring(0, 60)}...
+              {/* {desc} */}
             </Typography>
             {/* Rating */}
             <Box
@@ -76,7 +137,7 @@ function Favorite_Product(props) {
             >
               {" "}
               {[1, 2, 3, 4, 5].map((row, index) => {
-                if (review >= row) {
+                if (star >= row) {
                   return (
                     <StarIcon
                       key={index}
@@ -101,11 +162,12 @@ function Favorite_Product(props) {
                   ml: 2,
                 }}
               >
-                102 Rating
+                {/* 102 Rating */}
+                {Favorite?.review?.length ?? 0} Rating
               </Typography>
             </Box>
             {/* price */}
-            <Box pt={3}>
+            <Box pt={1}>
               <Typography
                 sx={{
                   color: "red",
@@ -114,29 +176,45 @@ function Favorite_Product(props) {
                   fontWeight: "800",
                 }}
               >
-                Rs : 200,000.00
+                Rs : {calNewPrice(Favorite.price, Favorite?.offer)}
               </Typography>
             </Box>
             {/* discout price */}
             <Box>
-              <Typography
-                sx={{
-                  color: "silver",
-                  fontSize: 12,
-                  fontFamily: "open sans",
-                  fontWeight: "700",
-                }}
-              >
-                <s>Rs : 200,000.00 -15%</s>
-              </Typography>
+              {props.data?.offer !== null ? (
+                <Typography
+                  sx={{
+                    color: "silver",
+                    fontSize: 12,
+                    fontFamily: "open sans",
+                    fontWeight: "700",
+                  }}
+                >
+                  <s>Rs : {props.data?.price} </s>-
+                  {props.data?.offer?.percentage}%
+                </Typography>
+              ) : (
+                <Typography
+                  sx={{
+                    color: "silver",
+                    fontSize: 12,
+                    fontFamily: "open sans",
+                    fontWeight: "700",
+                  }}
+                >
+                  <s>offer</s>
+                </Typography>
+              )}
             </Box>
           </Box>
           <Box
-            my={5}
+            my={1}
             sx={{
-              p: 2,
+              p: 1,
+              display: "flex",
               flexDirection: "row",
               alignItems: "center",
+              justifycontent: "space-between",
             }}
           >
             {/* add to cart button */}
@@ -144,8 +222,9 @@ function Favorite_Product(props) {
               aria-label="delete"
               variant="contained"
               size="large"
-              onClick={AddShoppingCart}
+              onClick={addToCart}
               sx={{
+                justifycontent: "flex-start",
                 m: 1,
                 size: 30,
                 color: "#fff",
@@ -162,7 +241,9 @@ function Favorite_Product(props) {
               size="large"
               onClick={OnDelete}
               sx={{
-                m: 1,
+                justifycontent: "flex-end",
+
+                // m: 1,
                 size: 30,
                 color: "#fff",
                 bgcolor: "#FF0000",

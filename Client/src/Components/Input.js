@@ -4,6 +4,10 @@ function Input(props) {
   return (
     <>
       <TextField
+      helperText={props.helperText}
+        onFocus={() => {
+          props?.onFocus && props.onFocus();
+        }}
         autoFocus={props.autoFocus}
         size={props.size}
         fullWidth
@@ -11,6 +15,7 @@ function Input(props) {
         onChange={(event) => {
           props.set(event.target.value);
         }}
+        error={props.error}
         id={props.id}
         label={props.label}
         variant="outlined"

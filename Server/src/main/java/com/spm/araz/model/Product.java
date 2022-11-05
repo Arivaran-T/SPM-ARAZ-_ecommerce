@@ -1,12 +1,14 @@
 package com.spm.araz.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 
 @Data
+//@NoArgsConstructor
 @Document("Product")
 public class Product {
     @Id
@@ -18,8 +20,9 @@ public class Product {
     private ArrayList<String> images;
     private ArrayList<Review> reviews;
     private Offer offer;
+    private String storeID;
 
-    public Product(String id, String title, String description, double price, String category, ArrayList<String> images) {
+    public Product(String id, String title, String description, double price, String category, ArrayList<String> images, String storeId) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -27,6 +30,18 @@ public class Product {
         this.category = category;
         this.images = images;
         this.reviews = new ArrayList<>();
+        this.storeID = storeId;
+    }
+
+    public Product() {
+    }
+
+    public String getStoreID() {
+        return storeID;
+    }
+
+    public void setStoreID(String storeID) {
+        this.storeID = storeID;
     }
 
     public String getId() {
@@ -82,6 +97,9 @@ public class Product {
     }
 
     public void setReviews(Review review) {
+        if(this.reviews == null){
+            this.reviews = new ArrayList<>();
+        }
         this.reviews.add(review);
     }
 

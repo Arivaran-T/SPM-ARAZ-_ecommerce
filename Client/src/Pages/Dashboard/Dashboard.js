@@ -1,4 +1,11 @@
-import { Box, IconButton, Grid, Autocomplete, TextField, Pagination } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Grid,
+  TextField,
+  Pagination,
+  Typography,
+} from "@mui/material";
 import { Container } from "@mui/system";
 import Category from "./Category";
 
@@ -6,15 +13,82 @@ import Category from "./Category";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import SearchIcon from "@mui/icons-material/Search";
-import CircularProgress from "@mui/material/CircularProgress";
 
 //react
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Product from "./Product";
+import axios from "axios";
 
 function Dashboard() {
+  //state
+  const [products, setproducts] = useState([]);
+  const [count, setCount] = useState(0);
+  const [category, setCategory] = useState(null);
+  const [categoryList, setCategoryList] = useState([]);
+  const [selectcategory, setSelectedCategory] = useState(null);
+  const [page, setPage] = useState(1);
+  const [isLoaded, setLoded] = useState(false);
+
   //hook
   const some = useRef();
+
+  //base url
+  const baseURL = "http://localhost:5000/";
+
+  //useEffect
+  useEffect(() => {
+    getAllProducts();
+    getProductCount();
+    getAllCategories();
+  }, [page, selectcategory]);
+
+  //get all product
+  const getAllProducts = () => {
+    setLoded(false);
+    let url =
+      category !== null
+        ? `${baseURL}products/?page=${page}&category=${category}`
+        : `${baseURL}products/?page=${page}`;
+    axios
+      .get(url)
+      .then((res) => {
+        setproducts(res.data.productList);
+        setLoded(true);
+      })
+      .catch((er) => {
+        setLoded(true);
+      });
+  };
+
+  //get product count
+  const getProductCount = () => {
+    setLoded(false);
+    let url = category
+      ? `${baseURL}products/count?category=${category}`
+      : `${baseURL}products/count`;
+
+    axios
+      .get(url)
+      .then((res) => {
+        setCount(Math.ceil(res.data / 8));
+        setLoded(true);
+      })
+      .catch((er) => {
+        setLoded(true);
+      });
+  };
+
+  //get all categories
+  const getAllCategories = () => {
+    axios
+      .get(`${baseURL}category`)
+      .then((res) => {
+        setCategoryList(res.data?.categoryList);
+      })
+      .catch((er) => {
+        console.log(er);
+      });
+  };
 
   //taken from net
   function sideScroll(direction, speed, distance, step) {
@@ -31,20 +105,28 @@ function Dashboard() {
       }
     }, speed);
   }
-  //category array
-  const array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 2, 3, 4, 5, 6];
-
-  //auto complete search
-  const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState([]);
-  const loading = open && options.length === 0;
-
-  //state
-  const [page, setPage] = useState(1);
 
   //pagination handler
   const handleChange = (event, value) => {
     setPage(value);
+  };
+
+  //search
+  const search = (val) => {
+    setLoded(false);
+    if (!val.trim()) {
+      getAllProducts();
+    } else {
+      axios
+        .get(`${baseURL}products/?title=${val.trim()}`)
+        .then((res) => {
+          setproducts(res.data.productList);
+          setLoded(true);
+        })
+        .catch((er) => {
+          setLoded(true);
+        });
+    }
   };
 
   return (
@@ -64,7 +146,7 @@ function Dashboard() {
           >
             <IconButton
               onClick={() => {
-                sideScroll("right", 25, array.length, 8);
+                sideScroll("right", 25, categoryList.length, 8);
               }}
             >
               <ArrowBackIosIcon />
@@ -80,14 +162,32 @@ function Dashboard() {
               }}
             >
               <Box id="some" sx={{ display: "flex", flexDirection: "row" }}>
-                {array.map((item, index) => {
-                  return <Category key={index} />;
+                {categoryList.map((item, index) => {
+                  return (
+                    <Category
+                      key={index}
+                      id={index}
+                      data={item}
+                      clicked={selectcategory}
+                      onSelect={(index) => {
+                        setSelectedCategory((pre) => {
+                          let val = pre === index ? null : index;
+
+                          return val;
+                        });
+                        setCategory((pre) => {
+                          let val = pre === categoryList[index]?.name ? null : categoryList[index]?.name;
+                          return val;
+                        });
+                      }}
+                    />
+                  );
                 })}
               </Box>
             </Box>
             <IconButton
               onClick={() => {
-                sideScroll("left", 25, array.length, 8);
+                sideScroll("left", 25, categoryList.length, 8);
               }}
             >
               <ArrowForwardIosIcon />
@@ -113,47 +213,22 @@ function Dashboard() {
                   py={0}
                   m={0}
                 >
-                  <Autocomplete
+                  <TextField
+                    onChange={(val) => {
+                      search(val.target.value);
+                    }}
+                    color="status"
+                    placeholder="search..."
+                    size="small"
                     fullWidth
-                    open={open}
-                    onOpen={() => {
-                      setOpen(true);
+                    InputProps={{
+                      style: {
+                        color: "#fff",
+                        letterSpacing: 0.5,
+                        fontWeight: "normal",
+                        textTransform: "capitalize",
+                      },
                     }}
-                    onClose={() => {
-                      setOpen(false);
-                    }}
-                    onFocus={() => {
-                      //call fun TODO
-                    }}
-                    isOptionEqualToValue={(option, value) =>
-                      option.title === value.title
-                    }
-                    onChange={(event, value) => {
-                      console.log(value);
-                    }}
-                    getOptionLabel={(option) => option.title}
-                    options={options}
-                    loading={loading}
-                    renderInput={(params) => (
-                      <TextField
-                        color="status"
-                        {...params}
-                        placeholder="search..."
-                        size="small"
-                        InputProps={{
-                          style: { color: "#fff" },
-                          ...params.InputProps,
-                          endAdornment: (
-                            <>
-                              {loading ? (
-                                <CircularProgress color="inherit" size={20} />
-                              ) : null}
-                              {params.InputProps.endAdornment}
-                            </>
-                          ),
-                        }}
-                      />
-                    )}
                   />
                   <IconButton
                     sx={{
@@ -181,18 +256,36 @@ function Dashboard() {
             alignItems={"center"}
             sx={{ my: 2 }}
           >
-            {[1, 2, 3, 4, 5, 6, 7, 8, 8].map((row, index) => {
-              return <Product key={index} />;
+            {products?.map((row, index) => {
+              return <Product data={row} key={index} />;
             })}
           </Grid>
+          {isLoaded && products.length <= 0 && (
+            <Box sx={{ flex: 1, justifyContent: "center" }}>
+              <Typography sx={{ textAlign: "center", color: "#555" }}>
+                No products
+              </Typography>
+            </Box>
+          )}
+          {!isLoaded && (
+            <Box sx={{ flex: 1, justifyContent: "center" }}>
+              <Typography sx={{ textAlign: "center", color: "#555" }}>
+                Loading ..
+              </Typography>
+            </Box>
+          )}
           {/* pagination sec */}
           <Box
-          my={2.5}
-            sx={{ display: "flex", flexDirection: "row", justifyContent: "center" }}
+            my={2.5}
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+            }}
           >
             <Pagination
               shape="rounded"
-              count={5}
+              count={count}
               color="primary"
               onChange={handleChange}
             />

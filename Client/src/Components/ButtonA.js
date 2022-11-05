@@ -10,7 +10,7 @@ function ButtonA(props) {
         variant="contained"
         disableElevation
         onClick={() => {
-          props.handler;
+          props.handler();
         }}
         sx={{ my: 1 }}
       >

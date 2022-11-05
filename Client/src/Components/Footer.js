@@ -10,9 +10,9 @@ import TwitterIcon from "@mui/icons-material/Twitter";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 
 const ArazLink = [
-  { title: "Login", link: "/auth/login" },
-  { title: "Register", link: "/auth/register" },
-  { title: "Account", link: "/profile" },
+  { title: "Login", link: "/login" },
+  { title: "Register", link: "/signup" },
+  { title: "Account", link: "/profile/details" },
   { title: "Report", link: "/report" },
   { title: "About Us", link: "/about-us" },
 ];
@@ -20,10 +20,10 @@ const ArazLink = [
 const ShoppingLink = [
   { title: "Store", link: "/store" },
   { title: "Cart", link: "/cart" },
-  { title: "Address Book", link: "/address-book" },
-  { title: "Payment Book", link: "/payment-book" },
-  { title: "Loyalty Points", link: "/loyalty-point" },
-  { title: "Track Order", link: "/track-order" },
+  { title: "Address Book", link: "/profile/addressbook" },
+  { title: "Payment Book", link: "/profile/payment" },
+  { title: "Loyalty Points", link: "/profile/loyalty" },
+  { title: "Track Order", link: "/profile/order" },
 ];
 
 function Footer() {

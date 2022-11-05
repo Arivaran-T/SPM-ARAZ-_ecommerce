@@ -6,8 +6,20 @@ import StarIcon from "@mui/icons-material/Star";
 import StarHalfIcon from "@mui/icons-material/StarHalf";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 
+import calNewPrice from "../../Helper/calNewPrice";
+import calReview from "../../Helper/calReview";
+import { useEffect, useState } from "react";
+
 function Product(props) {
-  const review = 4;
+  const product = props.data;
+  const [review, setReview] = useState(0);
+
+  useEffect(() => {
+    setReview(calReview(product?.reviews));
+  }, []);
+
+  const baseURL = "http://localhost:5000/";
+
   return (
     <>
       <Grid item sx={{ width: { md: 250, xs: 350 } }}>
@@ -28,12 +40,10 @@ function Product(props) {
             sx={{
               width: "100%",
               height: 230,
-              overflow: "scroll",
+              // overflow: "scroll",
               borderRadius: "5px 5px 0 0 ",
             }}
-            image={
-              "https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg?cs=srgb&dl=pexels-designecologist-1779487.jpg&fm=jpg"
-            }
+            image={`${baseURL}products/images/${product?.images[0]}`}
           />
           {/* title sec */}
           <Box p={1}>
@@ -46,7 +56,7 @@ function Product(props) {
                 letterSpacing: -0.5,
               }}
             >
-              Computer with 2TB hard disk and 256 SSD, 11th generation..
+              {product.title}
             </Typography>
             {/* price sec */}
             <Box>
@@ -58,7 +68,7 @@ function Product(props) {
                   fontWeight: "800",
                 }}
               >
-                Rs : 200,000.00
+                {"Rs " + calNewPrice(product.price, product?.offer)}
               </Typography>
             </Box>
             {/* discount sec */}
@@ -71,7 +81,9 @@ function Product(props) {
                   fontWeight: "700",
                 }}
               >
-                <s>Rs : 200,000.00 -15%</s>
+                <s>
+                  {product?.offer ? "Rs " + product.price : <div>Offer</div>}
+                </s>
               </Typography>
             </Box>
             {/* rating sec */}
@@ -109,7 +121,7 @@ function Product(props) {
                   ml: 2,
                 }}
               >
-                102 Rating
+                {product?.reviews?.length ?? 0} Rating
               </Typography>
             </Box>
             {/* divider */}
@@ -128,14 +140,14 @@ function Product(props) {
               }}
             >
               <Button
-                href={`/products/view/${props.id}`}
+                href={`/products/view/${product.id}`}
                 sx={{ color: "#1597BB", textTransform: "none", fontSize: 13 }}
               >
                 VIEW
               </Button>
               <Box sx={{ flexGrow: 1 }} />
               <Button
-                href={`/products/${props.id}`}
+                href={`/products/${product.id}`}
                 sx={{ color: "#1A374D", textTransform: "none", fontSize: 13 }}
               >
                 EDIT

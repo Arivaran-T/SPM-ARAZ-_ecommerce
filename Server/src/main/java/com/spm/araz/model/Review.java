@@ -16,6 +16,9 @@ public class Review {
         this.sellerReply = sellerReply;
     }
 
+    public Review() {
+    }
+
     public String getUserName() {
         return userName;
     }

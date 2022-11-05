@@ -1,95 +1,47 @@
-import { Grid, Paper, Typography, Select, MenuItem } from "@mui/material";
-import { Box } from "@mui/system";
-import { useState } from "react";
-import Label from "../../Components/Label";
-import InputLabel from "@mui/material/InputLabel";
+import { useEffect, useState } from "react";
 
-function Order_Product() {
-  const [districts, setDistricts] = useState("penting");
+import TableCell from "@mui/material/TableCell";
+import axios from "axios";
 
-  const DATA = [
-    { status: "penting" },
-    { status: "shipping" },
-    { status: "delivered" },
-  ];
+function Order_Product(Props) {
+  const [Status, setStatus] = useState("processing");
+
   return (
     <>
-      <Grid
-        p={1}
-        sx={{
-          bgcolor: "#D8D8D8",
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-around",
+      <TableCell
+        align="left"
+        style={{
+          fontFamily: "open sans",
+          fontWeight: "600",
+          fontSize: 16,
+          color: "#1A374D",
         }}
       >
-        <Box>
-          <Typography
-            sx={{
-              color: "#2B4865",
-              fontFamily: "open sans",
-              fontWeight: "600",
-              fontSize: 15,
-            }}
-          >
-            Product 1
-          </Typography>
-        </Box>
-        <Box>
-          <Typography
-            sx={{
-              color: "#1597BB",
-              fontFamily: "open sans",
-              fontWeight: "600",
-              fontSize: 15,
-            }}
-          >
-            Qty: 2
-          </Typography>
-        </Box>
-        <Box>
-          <Typography
-            sx={{
-              color: "#1597BB",
-              fontFamily: "open sans",
-              fontWeight: "600",
-              fontSize: 15,
-            }}
-          >
-            {districts}
-          </Typography>
-        </Box>
-        <Box mt={-1}>
-          <Select
-            sx={{ color: "#1597BB", fontWeight: "500" }}
-            onChange={(event) => {
-              setDistricts(event.target.value);
-            }}
-            fullWidth
-            required
-            size="small"
-            color="info"
-            id="Status"
-            value={districts}
-          >
-            {DATA.map((row, index) => {
-              return (
-                <MenuItem
-                  key={index}
-                  sx={{
-                    fontFamily: "open sans",
-                    fontSize: 15,
-                    color: "#333",
-                  }}
-                  value={row.status}
-                >
-                  {row.status}
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </Box>
-      </Grid>
+        {Props.data.productID}
+      </TableCell>
+      <TableCell
+        align="left"
+        style={{
+          fontFamily: "open sans",
+          fontWeight: "600",
+          fontSize: 16,
+          color: "#1A374D",
+        }}
+      >
+        {Props.data.count}
+      </TableCell>
+
+      <TableCell
+        align="left"
+        style={{
+          fontFamily: "open sans",
+          fontWeight: "600",
+          fontSize: 16,
+          color: "#1A374D",
+        }}
+      >
+        {Props.data.orderStatus}
+      </TableCell>
     </>
   );
 }

@@ -5,9 +5,22 @@ import { useNavigate } from "react-router";
 //icon
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
+import calNewPrice from "../../Helper/calNewPrice";
+import { useEffect, useState } from "react";
+import calReview from "../../Helper/calReview";
 
 function Product(props) {
   const review = 4;
+  const [star, setStar] = useState(0);
+  const product = props.data;
+
+  useEffect(() => {
+    setStar(calReview(product?.reviews));
+  }, []);
+
+  //url
+  const baseURL = "http://localhost:5000/";
+
   //hook
   const navigate = useNavigate();
   return (
@@ -15,7 +28,7 @@ function Product(props) {
       <Grid item sx={{ width: { md: 250, xs: 350 } }}>
         <Box
           onClick={() => {
-            navigate(`/products/view/${props.id}`);
+            navigate(`/products/view/${product.id}`);
           }}
           component={Paper}
           elevation={1}
@@ -34,12 +47,9 @@ function Product(props) {
             sx={{
               width: "100%",
               height: 190,
-              overflow: "scroll",
               borderRadius: "5px 5px 0 0 ",
             }}
-            image={
-              "https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg?cs=srgb&dl=pexels-designecologist-1779487.jpg&fm=jpg"
-            }
+            image={`${baseURL}products/images/${product?.images[0]}`}
           />
           {/* title sec */}
           <Box p={1}>
@@ -52,7 +62,7 @@ function Product(props) {
                 letterSpacing: -0.5,
               }}
             >
-              Computer with 2TB hard disk and 256 SSD, 11th generation..
+              {product?.title}
             </Typography>
             {/* price sec */}
             <Box>
@@ -64,21 +74,36 @@ function Product(props) {
                   fontWeight: "800",
                 }}
               >
-                Rs : 200,000.00
+                Rs : {calNewPrice(product?.price, product?.offer)}
               </Typography>
             </Box>
             {/* discount sec */}
             <Box>
-              <Typography
-                sx={{
-                  color: "silver",
-                  fontSize: 12,
-                  fontFamily: "open sans",
-                  fontWeight: "700",
-                }}
-              >
-                <s>Rs : 200,000.00 -15%</s>
-              </Typography>
+              {product?.offer !== null ? (
+                <Typography
+                  sx={{
+                    color: "silver",
+                    fontSize: 12,
+                    fontFamily: "open sans",
+                    fontWeight: "700",
+                  }}
+                >
+                  <s>
+                    Rs : {product?.price} -{product?.offer.percentage}%
+                  </s>
+                </Typography>
+              ) : (
+                <Typography
+                  sx={{
+                    color: "silver",
+                    fontSize: 12,
+                    fontFamily: "open sans",
+                    fontWeight: "700",
+                  }}
+                >
+                  <s>Offer</s>
+                </Typography>
+              )}
             </Box>
             {/* rating sec */}
             <Box
@@ -90,20 +115,10 @@ function Product(props) {
               }}
             >
               {[1, 2, 3, 4, 5].map((row, index) => {
-                if (review >= row) {
-                  return (
-                    <StarIcon
-                      key={index}
-                      sx={{ color: "#FEC260", fontSize: 13 }}
-                    />
-                  );
+                if (star >= row) {
+                  return <StarIcon key={index} sx={{ color: "#FEC260" }} />;
                 } else {
-                  return (
-                    <StarBorderIcon
-                      key={index}
-                      sx={{ color: "#333", fontSize: 13 }}
-                    />
-                  );
+                  return <StarBorderIcon key={index} sx={{ color: "#333" }} />;
                 }
               })}
               <Typography
@@ -115,7 +130,7 @@ function Product(props) {
                   ml: 2,
                 }}
               >
-                (102)
+                ({product?.reviews?.length ?? 0}) Rating
               </Typography>
             </Box>
           </Box>

@@ -5,22 +5,79 @@ import {
   Typography,
   IconButton,
   TextField,
+  Pagination,
 } from "@mui/material";
 import { Container } from "@mui/system";
+import axios from "axios";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 //icons
 import SearchIcon from "@mui/icons-material/Search";
 import CircularProgress from "@mui/material/CircularProgress";
 import Store from "./Store";
 
+import { ToastContainer, toast } from "react-toastify";
+
 function Stores() {
+  //state
   const [open, setOpen] = useState(false);
+  const [count, setCount] = useState(0);
   const [options, setOptions] = useState([]);
+  const [page, setPage] = useState(1);
+
+  const [stores, setStores] = useState([]);
+  const [title, setTitle] = useState("");
+
+  //url
+  const baseURL = "http://localhost:5000/";
+
+  //get stores
+  useEffect(() => {
+    getAllStore();
+    axios
+      .get(`${baseURL}stores/count`)
+      .then((res) => {
+        setCount(res.data);
+      })
+      .catch((er) => {});
+  }, [page]);
+
   const loading = open && options.length === 0;
+
+  //get all store
+  const getAllStore = () => {
+    axios
+      .get(`${baseURL}stores?page=${page}`)
+      .then((res) => {
+        setStores(res.data.storeList);
+      })
+      .catch((er) => {
+        toast("unable to fetch data", { type: "error" });
+      });
+  };
+
+  //search
+  const search = (title) => {
+    if (!title.trim()) {
+      return getAllStore();
+    }
+    axios
+      .get(`${baseURL}stores/search?title=${title.trim()}`)
+      .then((res) => {
+        setStores(res.data);
+      })
+      .catch((er) => {});
+  };
+
+  //pagination handler
+  const handleChange = (event, value) => {
+    setPage(value);
+  };
+
   return (
     <>
+      <ToastContainer />
       <Box>
         <Container maxWidth="lg">
           {/* title */}
@@ -66,49 +123,23 @@ function Stores() {
                   py={0}
                   m={0}
                 >
-                  <Autocomplete
+                  <TextField
+                    value={title}
+                    onChange={(event) => {
+                      setTitle(event.target.value);
+                      search(event.target.value);
+                    }}
+                    color="status"
+                    // {...params}
                     fullWidth
-                    open={open}
-                    onOpen={() => {
-                      setOpen(true);
+                    placeholder="search..."
+                    size="small"
+                    InputProps={{
+                      style: { color: "#fff" },
                     }}
-                    onClose={() => {
-                      setOpen(false);
-                    }}
-                    onFocus={() => {
-                      //call fun TODO
-                    }}
-                    isOptionEqualToValue={(option, value) =>
-                      option.title === value.title
-                    }
-                    onChange={(event, value) => {
-                      console.log(value);
-                    }}
-                    getOptionLabel={(option) => option.title}
-                    options={options}
-                    loading={loading}
-                    renderInput={(params) => (
-                      <TextField
-                        color="status"
-                        {...params}
-                        placeholder="search..."
-                        size="small"
-                        InputProps={{
-                          style: { color: "#fff" },
-                          ...params.InputProps,
-                          endAdornment: (
-                            <>
-                              {loading ? (
-                                <CircularProgress color="inherit" size={20} />
-                              ) : null}
-                              {params.InputProps.endAdornment}
-                            </>
-                          ),
-                        }}
-                      />
-                    )}
                   />
                   <IconButton
+                    onClick={search}
                     sx={{
                       bgcolor: "#FEC260",
                       borderRadius: 0.5,
@@ -127,16 +158,34 @@ function Stores() {
           {/* stores sec */}
           <Grid
             container
-            justifyContent={"space-evenly"}
+            justifyContent={"center"}
             alignItems="center"
             rowSpacing={3}
             columnSpacing={5}
             sx={{ my: 3 }}
           >
-            {[1, 2, 3, 4, 5, 6, 7].map((row, index) => {
-              return <Store key={index} />;
+            {stores?.map((row, index) => {
+              return <Store data={row} key={index} />;
             })}
+            {stores?.length <= 0 && (
+              <Typography sx={{ color: "#333", ml: 5 }}>No store</Typography>
+            )}
           </Grid>
+          <Box
+            my={2.5}
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+            }}
+          >
+            <Pagination
+              shape="rounded"
+              count={Math.ceil(count / 6)}
+              color="primary"
+              onChange={handleChange}
+            />
+          </Box>
         </Container>
       </Box>
     </>

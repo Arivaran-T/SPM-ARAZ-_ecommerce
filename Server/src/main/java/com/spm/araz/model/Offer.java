@@ -9,6 +9,9 @@ public class Offer {
         this.validUntil = validUntil;
     }
 
+    public Offer() {
+    }
+
     public int getPercentage() {
         return percentage;
     }

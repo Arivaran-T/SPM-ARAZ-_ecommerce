@@ -8,8 +8,39 @@ import EditIcon from "@mui/icons-material/Edit";
 // component
 import Input from "../../Components/Input";
 
+import formatDate from "../../Helper/formatDate";
+import { useState } from "react";
+import axios from "axios";
+
+import { ToastContainer, toast } from "react-toastify";
+
 function Review(props) {
-  const review = 3;
+  const review = props.data;
+
+  //state
+  const [reply, setReply] = useState("");
+
+  //url
+  const baseURL = "http://localhost:5000/";
+
+  //reply handler
+  const replyHandler = () => {
+    //validate
+    if (!reply.trim()) {
+      return;
+    }
+
+    const data = { ...review, sellerReply: reply };
+    axios
+      .post(`${baseURL}products/${props.id}/reviews/reply`, data)
+      .then((res) => {
+        toast("Reply added", { type: "info" });
+      })
+      .catch((er) => {
+        toast("Unable to add reply", { type: "error" });
+      });
+  };
+
   return (
     <>
       <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
@@ -22,7 +53,7 @@ function Review(props) {
               fontWeight: "700",
             }}
           >
-            User Name
+            {review.userName}
           </Typography>
           <Typography
             sx={{
@@ -32,12 +63,12 @@ function Review(props) {
               fontWeight: "700",
             }}
           >
-            2022/12/12
+            {formatDate(review.date)}
           </Typography>
         </Box>
         <Box ml={2}>
           {[1, 2, 3, 4, 5].map((row, index) => {
-            if (review >= row) {
+            if (review.star >= row) {
               return (
                 <StarIcon
                   key={index}
@@ -59,31 +90,31 @@ function Review(props) {
         <Typography
           sx={{ fontWeight: "600", fontFamily: "open sans", fontSize: 13 }}
         >
-          Video provides a powerful way to help you prove your point. When you
-          click Online Video, you can paste in the embed code for the video you
-          want to add. You can also type a keyword to search online for the
-          video that best fits your document.
+          {review.review}
         </Typography>
       </Box>
       {/* reply sec */}
-      {true ? (
-        <Box my={1} mb={2} pl={{ xs: 0, sm: 8 }}>
-          <Input maxRows={4} minRows={3} />
-          <Box sx={{ display: "flex", flexDirection: "row" }}>
-            <Box sx={{ flexGrow: 1 }} />
-            <Button
-              sx={{
-                width: { xs: "100%", sm: 10 },
-                my: 1,
-              }}
-              variant="contained"
-              disableElevation
-              color="info"
-            >
-              Reply
-            </Button>
+      {review.sellerReply === null ? (
+        props.storeID === props.product && (
+          <Box my={1} mb={2} pl={{ xs: 0, sm: 8 }}>
+            <Input maxRows={4} minRows={3} value={reply} set={setReply} />
+            <Box sx={{ display: "flex", flexDirection: "row" }}>
+              <Box sx={{ flexGrow: 1 }} />
+              <Button
+                onClick={replyHandler}
+                sx={{
+                  width: { xs: "100%", sm: 10 },
+                  my: 1,
+                }}
+                variant="contained"
+                disableElevation
+                color="info"
+              >
+                Reply
+              </Button>
+            </Box>
           </Box>
-        </Box>
+        )
       ) : (
         // seller reply
         <Box my={1} mb={2} pl={{ xs: 0, sm: 8 }}>
@@ -122,7 +153,7 @@ function Review(props) {
             <Typography
               sx={{ fontWeight: "600", fontFamily: "open sans", fontSize: 13 }}
             >
-              Video provides a powerful way to help you prove your point.
+              {review.sellerReply}
             </Typography>
           </Box>
         </Box>
